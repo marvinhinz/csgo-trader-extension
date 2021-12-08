@@ -34,7 +34,7 @@ Webpack runs the linter on code save and linting problems are printed when they 
 
 ### Build
 `npm run build` creates a complete build in the `build` directory. 
-he extension can be loaded form there afterwards.
+The extension can be loaded form there afterwards.
 
 ### Deploy
 AWS CodeBuild is manually started. The configuration is in `buildspec.yml`.

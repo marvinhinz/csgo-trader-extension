@@ -19,7 +19,6 @@ module.exports = (env) => {
     const manifest = JSON.parse(buffer.toString());
 
     manifest.options_page = 'index.html';
-    manifest.background.persistent = false;
 
     if (mode === 'development') {
       manifest.key = chromeExtKey;
@@ -87,9 +86,8 @@ module.exports = (env) => {
       // that is used for the popup, options and bookmarks
       index: path.join(__dirname, 'src', '', 'index.js'),
 
-      // background scripts
+      // background script
       'js/backgroundScripts/background': path.join(__dirname, 'src', 'backgroundScripts', 'background.js'),
-      'js/backgroundScripts/messaging': path.join(__dirname, 'src', 'backgroundScripts', 'messaging.js'),
 
       // content scripts that don't run on Steam
       'js/contentScripts/loungeBump': path.join(__dirname, 'src', 'contentScripts', 'loungeBump.js'),
