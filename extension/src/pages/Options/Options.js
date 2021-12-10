@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   BrowserRouter as Router,
-  Switch,
+  Routes,
   Route,
 } from 'react-router-dom';
 import { Nav } from 'react-bootstrap';
@@ -122,15 +122,15 @@ const options = ({ match }) => {
               </div>
             </div>
             <div className="col-md-10 ml-sm-auto col-lg-10 pt-3 px-4 options__content">
-              <Switch>
+              <Routes>
                 {routes.map((route) => (
                   <Route
                     path={match.path + route.to}
-                    component={route.component}
+                    element={<route.component />}
                     key={route.to}
                   />
                 ))}
-              </Switch>
+              </Routes>
             </div>
           </div>
         </div>

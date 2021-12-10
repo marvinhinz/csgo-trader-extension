@@ -5,9 +5,9 @@ import './App.scss';
 
 import {
   BrowserRouter as Router,
-  Switch,
+  Routes,
   Route,
-  Redirect,
+  Navigate,
 } from 'react-router-dom';
 import Navigation from './components/Navigation/Navigation';
 
@@ -29,25 +29,20 @@ function App() {
       <Navigation />
       <div className="content">
         <Suspense fallback={<div>Loading...</div>}>
-          <Switch>
-            <Route path="/options/" component={Options} />
-            <Route path="/bookmarks/" component={Bookmarks} />
-            <Route path="/trade-history/" component={TradeHistory} />
-            <Route>
-              <Redirect to="/options/general/" />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="options/" element={<Options />} />
+            <Route path="bookmarks/" element={<Bookmarks />} />
+            <Route path="trade-history/" element={<TradeHistory />} />
+            <Route path="/index.html/" element={<Navigate to="options/general/" replace />} />
+            <Route path="*" element={<Navigate to="options/general/" replace />} />
+          </Routes>
         </Suspense>
       </div>
       {window.location.search === '?page=bookmarks' ? (
-        <Route>
-          <Redirect to="/bookmarks/" />
-        </Route>
+        <Navigate to="bookmarks/" />
       ) : null}
       {window.location.search === '?page=trade-history' ? (
-        <Route>
-          <Redirect to="/trade-history/history" />
-        </Route>
+        <Navigate to="trade-history/history" />
       ) : null}
     </Router>
   );
