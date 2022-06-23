@@ -236,7 +236,7 @@ const getPattern = (name, paintSeed) => {
   }
   if (name.includes(' Case Hardened')) {
     let pattern = null;
-    if (name.includes('AK-47'))pattern = patterns.case_hardeneds.ak[paintSeed];
+    if (name.includes('AK-47')) pattern = patterns.case_hardeneds.ak[paintSeed];
     else if (name.includes('Butterfly')) pattern = patterns.case_hardeneds.butterfly[paintSeed];
     else if (name.includes('M9 Bayonet')) pattern = patterns.case_hardeneds.m9[paintSeed];
     else if (name.includes('Bayonet')) pattern = patterns.case_hardeneds.bayonet[paintSeed];
@@ -266,8 +266,13 @@ const handleStickerNamesWithCommas = (names) => {
 
   for (let i = 0; i < names.length; i += 1) {
     const name = names[i];
+
     if (name === 'Don\'t Worry' && names[i + 1] === 'I\'m Pro') {
       namesModified.push('Don\'t Worry, I\'m Pro');
+      nameWithCommaFound = true;
+      i += 1;
+    } else if (name === 'Hi' && names[i + 1] === 'My Game Is') {
+      namesModified.push('Hi, My Game Is');
       nameWithCommaFound = true;
       i += 1;
     } else namesModified.push(name);
@@ -565,6 +570,19 @@ const updateLoggedInUserInfo = () => {
   }
 };
 
+// updates the nick name (persona name) of the extension's user in storage
+const updateLoggedInUserName = () => {
+  const pullDownElement = document.getElementById('account_pulldown');
+
+  if (pullDownElement !== null) { // if it's  null then the user is not logged in
+    const nickName = pullDownElement.innerText;
+
+    chrome.storage.local.set({
+      nickNameOfUser: nickName,
+    }, () => {});
+  }
+};
+
 const warnOfScammer = (steamID, page) => {
   if (steamID) {
     chrome.runtime.sendMessage({ getSteamRepInfo: steamID }, ({ SteamRepInfo }) => {
@@ -810,7 +828,7 @@ export {
   validateSteamAPIKey, getAssetIDFromInspectLink, updateLoggedInUserInfo,
   listenToLocationChange, addPageControlEventListeners, getItemByAssetID,
   getAssetIDOfElement, addDopplerPhase, getActivePage, makeItemColorful,
-  addSSTandExtIndicators, addFloatIndicator, addPriceIndicator,
+  addSSTandExtIndicators, addFloatIndicator, addPriceIndicator, updateLoggedInUserName,
   getDataFilledFloatTechnical, souvenirExists, removeLinkFilterFromLinks,
   getFloatBarSkeleton, getInspectLink, csgoFloatExtPresent, markModMessagesAsRead,
   reloadPageOnExtensionReload, isSIHActive, addSearchListener, getSessionID,

@@ -5,13 +5,13 @@ import {
   getAssetIDOfElement, makeItemColorful, addDopplerPhase,
   addSSTandExtIndicators, addFloatIndicator, addPriceIndicator,
   getDataFilledFloatTechnical, souvenirExists, copyToClipboard,
-  getFloatBarSkeleton, addUpdatedRibbon,
+  getFloatBarSkeleton, addUpdatedRibbon, updateLoggedInUserName,
   logExtensionPresence, repositionNameTagIcons, csgoFloatExtPresent,
   updateLoggedInUserInfo, reloadPageOnExtensionReload, isSIHActive, getActivePage,
   addSearchListener, getPattern, removeFromArray, toFixedNoRounding,
 }
   from 'utils/utilsModular';
-import { getItemMarketLink, generateInspectCommand } from 'utils/simpleUtils';
+import { getItemMarketLink, generateInspectCommand, isDopplerInName } from 'utils/simpleUtils';
 import { getShortDate, dateToISODisplay, prettyTimeAgo } from 'utils/dateTime';
 import {
   stattrak, starChar, souvenir, stattrakPretty, genericMarketLink,
@@ -951,7 +951,7 @@ const addRightSideElements = () => {
         if (item.commodity) {
           const multiSellLink = `
                 <div class="descriptor multiSellLink">
-                    <a href="https://steamcommunity.com/market/multisell?appid=${item.appid}&contextid=${item.contextid}&items%5B%5D=${item.market_hash_name}" target="_blank">
+                    <a href="https://steamcommunity.com/market/multisell?appid=${item.appid}&contextid=${item.contextid}&items%5B%5D=${item.market_hash_name}&qty%5B%5D=250" target="_blank">
                         Open multisell page.
                       </a>
                 </div>
@@ -1189,10 +1189,10 @@ const addListingRow = (item) => {
                   >
                   ${item.price ? item.price.display : '0'}
               </div>
-              <div class="cell itemStartingAt clickable">Loading...</div>
-              <div class="cell itemQuickSell clickable">Loading...</div>
-              <div class="cell itemMidPrice clickable">Loading...</div>
-              <div class="cell itemInstantSell clickable">Loading...</div>
+              <div class="cell itemStartingAt clickable">---</div>
+              <div class="cell itemQuickSell clickable">---</div>
+              <div class="cell itemMidPrice clickable">---</div>
+              <div class="cell itemInstantSell clickable">---</div>
               <div class="cell itemUserPrice"><input type="text" class="userPriceInput"></div>
           </div>`;
 
@@ -1338,11 +1338,20 @@ const addToPriceQueueIfNeeded = (item) => {
   const startingAtElement = listingRow.querySelector('.itemStartingAt');
   const instantElement = listingRow.querySelector('.itemInstantSell');
   const midPriceElement = listingRow.querySelector('.itemMidPrice');
+  const quickPriceElement = listingRow.querySelector('.itemQuickSell');
+
+  const priceLoadingCheckBoxes = document.querySelector('.priceLoadingCheckboxes');
+
+  const loadLowestListingPrice = priceLoadingCheckBoxes.querySelector('#lowestListingCheckBox').checked;
+  const loadMidPrice = priceLoadingCheckBoxes.querySelector('#midPriceCheckBox').checked;
+  const loadInstantSellPrice = priceLoadingCheckBoxes.querySelector('#instantSellCheckBox').checked;
 
   // check if price is already set or in progress
-  if (startingAtElement.getAttribute('data-price-set') !== true
+  if (loadLowestListingPrice && startingAtElement.getAttribute('data-price-set') !== true
     && startingAtElement.getAttribute('data-price-in-progress') !== true) {
     startingAtElement.setAttribute('data-price-in-progress', true.toString());
+    startingAtElement.innerText = 'Loading...';
+    quickPriceElement.innerText = 'Loading...';
 
     priceQueue.jobs.push({
       type: 'inventory_mass_sell_starting_at',
@@ -1357,9 +1366,10 @@ const addToPriceQueueIfNeeded = (item) => {
   }
 
   // check if price is already set or in progress
-  if (instantElement.getAttribute('data-price-set') !== true
+  if (loadInstantSellPrice && instantElement.getAttribute('data-price-set') !== true
     && instantElement.getAttribute('data-price-in-progress') !== true) {
     instantElement.setAttribute('data-price-in-progress', true.toString());
+    instantElement.innerText = 'Loading...';
 
     priceQueue.jobs.push({
       type: 'inventory_mass_sell_instant_sell',
@@ -1374,9 +1384,10 @@ const addToPriceQueueIfNeeded = (item) => {
   }
 
   // check if price is already set or in progress
-  if (midPriceElement.getAttribute('data-price-set') !== true
+  if (loadMidPrice && midPriceElement.getAttribute('data-price-set') !== true
     && midPriceElement.getAttribute('data-price-in-progress') !== true) {
     midPriceElement.setAttribute('data-price-in-progress', true.toString());
+    midPriceElement.innerText = 'Loading...';
 
     priceQueue.jobs.push({
       type: 'inventory_mass_sell_mid_price',
@@ -1500,6 +1511,7 @@ const generateItemsList = () => {
   const includeDupes = document.getElementById('generate_duplicates').checked;
   const includeNonMarketable = document.getElementById('generate_non_market').checked;
   const selectedOnly = document.getElementById('selected_only').checked;
+  const includeItemLinks = document.getElementById('include_inventory_links').checked;
 
   let lineCount = 0;
   let characterCount = 0;
@@ -1512,16 +1524,21 @@ const generateItemsList = () => {
   sortedItems.forEach((itemElement) => {
     const IDs = getIDsFromElement(itemElement, 'inventory');
     const item = getItemByIDs(items, IDs.appID, IDs.contextID, IDs.assetID);
+    const customName = isDopplerInName(item.name)
+      ? `${item.name} (${item.dopplerInfo.name})`
+      : item.name;
     const price = (showPrice && item.price !== null) ? ` ${delimiter} ${item.price.display}` : '';
     const priceCSV = (showPrice && item.price !== null) ? `,${item.price.display}` : '';
     const exterior = (item.exterior !== undefined && item.exterior !== null) ? item.exterior[exteriorType] : '';
     const tradableAt = new Date(item.tradability).toString().split('GMT')[0];
+    const inventoryLink = `https://steamcommunity.com/profiles/${item.owner}/inventory/#${item.appid}_${item.contextid}_${item.assetid}`;
+    const itemInventoryLink = includeItemLinks ? `${delimiter} ${inventoryLink}` : '';
     const tradability = (showTradability && tradableAt !== 'Invalid Date') ? `${delimiter} ${tradableAt}` : '';
     const tradabilityCSV = (showTradability && tradableAt !== 'Invalid Date') ? `,${tradableAt}` : '';
     const duplicate = (!includeDupes && item.duplicates.num !== 1) ? `${delimiter} x${item.duplicates.num}` : '';
     const duplicateCSV = (!includeDupes && item.duplicates.num !== 1) ? `,x${item.duplicates.num}` : '';
-    const line = `${item.name} ${delimiter} ${exterior}${price}${tradability} ${duplicate}\n`;
-    const lineCSV = `"${item.name}",${exterior}${priceCSV}${tradabilityCSV}${duplicateCSV}\n`;
+    const line = `${includeDupes ? customName : item.name} ${delimiter} ${exterior}${price}${tradability} ${duplicate} ${itemInventoryLink}\n`;
+    const lineCSV = `"${includeDupes ? customName : item.name}",${exterior}${priceCSV}${tradabilityCSV}${duplicateCSV}\n`;
 
     if (lineCount < limit) {
       if (includeDupes || (!includeDupes && !namesAlreadyInList.includes(item.market_hash_name))) {
@@ -1537,6 +1554,7 @@ const generateItemsList = () => {
       }
     }
   });
+  
   const encodedURI = encodeURI(csvContent);
   const downloadButton = document.getElementById('generate_download');
   downloadButton.setAttribute('href', encodedURI);
@@ -1603,11 +1621,13 @@ const addFunctionBar = () => {
                                 <span> Tradability</span>
                                 <input type="checkbox" id="generate_tradability">
                                 <span><b>Include:</b> Duplicates</span>
-                                <input id="generate_duplicates" type="checkbox">
+                                <input id="generate_duplicates" type="checkbox" checked>
                                 <span>Non-Marketable</span>
                                 <input id="generate_non_market" type="checkbox">
                                 <span>Selected only</span>
-                                <input id="selected_only" type="checkbox">
+                                <input id="selected_only" type="checkbox" checked>
+                                <span title="Only works with copy to clipboard, not .csv download">Links</span>
+                                <input id="include_inventory_links" type="checkbox" checked>
                             </div>
                             
                             <div>
@@ -1640,6 +1660,16 @@ const addFunctionBar = () => {
                                 <div class="cell" title="Price specified by you">Your price</div>
                               </div>
                               <div class="rowGroup"></div>
+                              <div class="priceLoadingCheckboxes row">
+                                <div class="cell" title="Tick the boxes where you want prices loaded">Load prices for:</div>
+                                <div class="cell"></div>
+                                <div class="cell"></div>
+                                <div class="cell"><input type="checkbox" id="lowestListingCheckBox" checked/></div>
+                                <div class="cell">Based on startint at</div>
+                                <div class="cell"><input type="checkbox" id="midPriceCheckBox" checked/></div>
+                                <div class="cell"><input type="checkbox" id="instantSellCheckBox" checked/></div>
+                                <div class="cell"></div>
+                              </div>
                           </div>
                           <span class="beforeStart">
                               <span style="font-weight: bold">Total:</span><span id="numberOfItemsToSell">0</span> item(s) selected worth <span id="saleTotal">0</span>
@@ -1695,6 +1725,37 @@ const addFunctionBar = () => {
       () => {
         startMassSelling();
       });
+
+    document.querySelectorAll('#lowestListingCheckBox, #midPriceCheckBox, #instantSellCheckBox').forEach((checkBox) => {
+      checkBox.addEventListener('change', (event) => {
+        if (event.target.checked) {
+          for (const listingRow of document.getElementById('listingTable').querySelector('.rowGroup').querySelectorAll('.row')) {
+            const ID = listingRow.getAttribute('data-ids').split(',')[0];
+  
+            addToPriceQueueIfNeeded({
+              market_hash_name: listingRow.getAttribute('data-item-name').split('_')[2],
+              appid: ID.split('_')[0],
+              contextid: ID.split('_')[1],
+              assetid: ID.split('_')[2],
+            });
+          }
+        } else {
+          let type = '';
+
+          if (event.target.id === 'lowestListingCheckBox') {
+            type = 'inventory_mass_sell_starting_at';
+          } else if (event.target.id === 'midPriceCheckBox') {
+            type = 'inventory_mass_sell_mid_price';
+          } else if (event.target.id === 'instantSellCheckBox') {
+            type = 'inventory_mass_sell_instant_sell';
+          }
+
+          priceQueue.jobs = priceQueue.jobs.filter((job) => {
+            return job.type !== type;
+          });
+        }
+      });
+    });
 
     document.getElementById('stopSale').setAttribute('data-stopped', 'true');
 
@@ -1971,6 +2032,7 @@ addSearchListener('inventory', () => {
 });
 overridePopulateActions();
 updateLoggedInUserInfo();
+updateLoggedInUserName();
 addUpdatedRibbon();
 
 if (isOwnInventory()) {
