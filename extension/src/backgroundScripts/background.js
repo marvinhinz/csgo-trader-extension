@@ -369,10 +369,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // async return to signal that it will return later
   }
   if (request.badgetext !== undefined) {
-    // this supposed to be the manifest v3 way but it's not yet apparently??
-    // chrome.action is undefied for now
-    // chrome.action.setBadgeText({ text: request.badgetext });
-    chrome.browserAction.setBadgeText({ text: request.badgetext });
+    chrome.action.setBadgeText({ text: request.badgetext });
     sendResponse({ badgetext: request.badgetext });
   } else if (request.openInternalPage !== undefined) {
     chrome.permissions.contains({ permissions: ['tabs'] }, (result) => {
