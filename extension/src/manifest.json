@@ -12,12 +12,12 @@
     "notifications",
     "alarms",
     "unlimitedStorage"],
-  "optional_permissions": [
-    "tabs",
-    "*://csgolounge.com/*",
-    "*://old.csgolounge.com/*",
-    "*://csgotraders.net/*",
-    "*://discord.com/*"],
+  "optional_permissions": ["tabs"],
+  "optional_host_permissions": [
+      "*://csgolounge.com/*",
+      "*://old.csgolounge.com/*",
+      "*://csgotraders.net/*",
+      "*://discord.com/*"],  
   "host_permissions": [
     "*://steamcommunity.com/*",
     "*://api.steampowered.com/*",
