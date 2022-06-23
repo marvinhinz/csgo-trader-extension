@@ -308,7 +308,10 @@ const updateActiveOffers = (offers, items) => {
 
   chrome.storage.local.get('showNumberOfOfferOnBadge', ({ showNumberOfOfferOnBadge }) => {
     if (showNumberOfOfferOnBadge) {
-      chrome.action.setBadgeText({ text: receivedActiveCount.toString() });
+      // this supposed to be the manifest v3 way but it's not yet apparently??
+      // chrome.action is undefied for now
+      // chrome.action.setBadgeText({ text: receivedActiveCount.toString() });
+      chrome.browserAction.setBadgeText({ text: receivedActiveCount.toString() });
     }
   });
 
