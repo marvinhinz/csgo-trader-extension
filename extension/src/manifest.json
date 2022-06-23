@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_application_title__",
   "short_name": "CSGO Trader",
-  "version": "2.12.1",
+  "version": "2.14.1",
   "default_locale": "en",
   "description": "__MSG_application_description__",
   "homepage_url": "https://csgotrader.app/",
@@ -184,7 +184,7 @@
         "images/external_logos/csmoney.png",
         "images/external_logos/swapgg.png",
         "images/external_logos/dmarket.png",
-        "images/external_logos/itemherald.png",
+        "images/external_logos/gamerpay.png",
         "images/external_logos/waxpeer.png"
       ],
       "matches": ["<all_urls>"],
